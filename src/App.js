@@ -1,25 +1,36 @@
-import logo from './logo.svg';
-import './App.css';
+const compression = require('compression');
+const express = require('express');
+const helmet = require('helmet');
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const env = require('./constants/env');
+const routes = require('./routes');
+
+const cors = require('cors');
+
+const app = express();
+app.use(
+  cors({
+    origin: ['http://localhost:3000'],
+  })
+);
+// set security HTTP headers
+app.use(helmet());
+
+// parse json request body
+app.use(express.json());
+
+// parse urlencoded request body
+app.use(express.urlencoded({ extended: true }));
+
+// serving client files in production
+if (env.NODE_ENV === 'production') {
+  app.use(express.static('public'));
 }
 
-export default App;
+// gzip compression
+app.use(compression());
+
+// api routes
+app.use('/api', routes);
+
+module.exports = app;

@@ -1,0 +1,6 @@
+@serverUrl = http://localhost:3001/api
+
+###
+
+# Get hello from server
+GET {{serverUrl}}/hello

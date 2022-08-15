@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "codezombiech.gitignore",
+    "coenraads.bracket-pair-colorizer-2",
+    "dbaeumer.vscode-eslint",
+    "dsznajder.es7-react-js-snippets",
+    "esbenp.prettier-vscode",
+    "humao.rest-client",
+    "mgmcdermott.vscode-language-babel",
+    "mikestead.dotenv",
+    "ms-azuretools.vscode-docker",
+    "naumovs.color-highlight",
+    "redhat.vscode-yaml"
+  ]
+}
