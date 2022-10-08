@@ -1,6 +1,6 @@
 const User = require('../models/user');
 
-const userUpdated = async (data, id) => {
+export const userUpdated = async (data, id) => {
   try {
     const user = await User.findOneAndUpdate(
       {

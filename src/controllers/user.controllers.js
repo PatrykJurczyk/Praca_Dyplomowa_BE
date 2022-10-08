@@ -5,23 +5,24 @@ const userUpdated = require('../constants/userUpdated');
 const User = require('../models/user');
 const { editValidation, loginValidation, passwdEditValidation, registerValidation } = require('../routes/validation');
 
-const createUser = async (data) => {
+export const createUser = async (data) => {
   const { error } = registerValidation(data);
   if (error) return { status: 'invalid', message: error.details[0].message };
 
-  const userExist = await User.find({ email: data.email });
+  const userExist = await User.find({ email: data.email, status: { $eq: 1 } });
 
-  if (userExist[0]) return { status: 'invalid', message: 'Email is already used' };
+  if (userExist[0] && userExist[0].status === 1) return { status: 'invalid', message: 'Email already exists' };
+
+  if (data.password !== data.passwordRepeat) return { status: 'invalid', message: 'The passwords do not match.' };
 
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(data.password, salt);
   try {
     const user = await User.create({
       name: data.name,
-      photo: data.photo,
       email: data.email,
       password: hashedPassword,
-      role: data.role,
+      role: data.role, // user / admin / manager
     });
 
     return user;
@@ -30,29 +31,29 @@ const createUser = async (data) => {
   }
 };
 
-const loginUser = async (data) => {
+export const loginUser = async (data) => {
   const { error } = loginValidation(data);
   if (error) return { status: 'invalid', message: error.details[0].message };
 
-  const activeUser = await User.find({ email: data.email });
-  if (!activeUser[0]) return { status: 'invalid', message: 'Email or password is wrong' };
+  const activeUser = await User.find({ email: data.email, status: { $eq: 1 } });
+  if (!activeUser[0] || activeUser[0].status === 0) return { status: 'invalid', message: 'Email or password is wrong' };
 
   const validPass = await bcrypt.compare(data.password, activeUser[0].password);
   if (!validPass) return { status: 'invalid', message: 'Email or password is wrong' };
 
   const token = jsonwebtoken.sign({ _id: activeUser[0]._id }, process.env.TOKEN_SECRET);
 
-  return { id: activeUser[0].id, token, message: `Welcome ${activeUser[0].name}` };
+  return { id: activeUser[0].id, token, role: activeUser[0].role, message: `Welcome ${activeUser[0].name}` };
 };
 
-const editUser = async (data, id) => {
+export const editUser = async (data, id) => {
   const { error } = editValidation(data);
   if (error) return { status: 'invalid', message: error.details[0].message };
 
   return userUpdated({ name: data.name, photo: data.photo, role: data.role }, id);
 };
 
-const editPassword = async (data, id) => {
+export const editPassword = async (data, id) => {
   const { error } = passwdEditValidation(data);
   if (error) return { status: 'invalid', message: error.details[0].message };
 
@@ -67,22 +68,25 @@ const editPassword = async (data, id) => {
   const difOldNewPass = await bcrypt.compare(data.newPasswordRepeat, user.password);
   if (difOldNewPass) return { status: 'invalid', message: 'The old password and the new password must be different.' };
 
-  const newPass = data.newPasswordRepeat;
+  data.password = data.newPasswordRepeat;
 
   const salt = await bcrypt.genSalt();
-  const newPassword = await bcrypt.hash(newPass, salt);
+  data.password = await bcrypt.hash(data.password, salt);
 
-  return userUpdated({ password: newPassword }, id);
+  return userUpdated({ password: data.password }, id);
 };
 
-const deleteUser = async (id) => {
+export const deleteUser = async (id) => {
   const userExist = await User.findOne({ _id: id });
 
-  if (!userExist) return { status: 'invalid', message: 'User not found' };
+  if (!userExist || userExist.status === 0) return { status: 'invalid', message: 'User not found' };
 
-  await User.findOneAndDelete({
-    _id: id,
-  });
+  await User.findOneAndUpdate(
+    {
+      _id: id,
+    },
+    { status: 0 }
+  );
 
   return { message: 'The account has been deleted' };
 };

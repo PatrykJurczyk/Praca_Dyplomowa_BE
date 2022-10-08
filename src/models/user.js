@@ -9,13 +9,9 @@ const UserSchema = mongoose.Schema(
     photo: {
       type: String,
     },
-    taskCount: {
-      type: Number,
-      default: 0,
-    },
     role: {
       type: String,
-      default: 'Base',
+      default: 'User',
     },
     email: {
       type: String,
@@ -25,6 +21,10 @@ const UserSchema = mongoose.Schema(
       type: String,
       required: true,
       min: 6,
+    },
+    status: {
+      type: Number,
+      default: 1,
     },
   },
   { timestamps: true }

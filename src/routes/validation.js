@@ -5,8 +5,7 @@ const validateField = {
     'string.empty': `Name must contain value`,
     'any.required': `Name is a required field`,
   }),
-  email: Joi.string().email().messages({
-    'string.email': `Please enter a valid email address.`,
+  email: Joi.string().messages({
     'string.empty': `Email must contain value`,
     'any.required': `Email is a required field`,
   }),
@@ -23,6 +22,7 @@ const registerValidation = (data) => {
     photo: Joi.string(),
     email: validateField.email.required(),
     password: validateField.password,
+    passwordRepeat: validateField.password,
     role: Joi.string(),
   });
 
