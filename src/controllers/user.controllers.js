@@ -7,7 +7,7 @@ const { editValidation, loginValidation, passwdEditValidation, registerValidatio
 const isActive = 1;
 const isInActive = 0;
 
-export const createUser = async (data) => {
+const createUser = async (data) => {
   const { error } = registerValidation(data);
 
   if (error) return { status: 'invalid', message: error.details[0].message };
@@ -32,7 +32,7 @@ export const createUser = async (data) => {
   }
 };
 
-export const loginUser = async (data) => {
+const loginUser = async (data) => {
   const { error } = loginValidation(data);
   if (error) return { status: 'invalid', message: error.details[0].message };
 
@@ -48,7 +48,7 @@ export const loginUser = async (data) => {
   return { id: activeUser[0].id, token, role: activeUser[0].role };
 };
 
-export const editUser = async (data, id, img) => {
+const editUser = async (data, id, img) => {
   const { error } = editValidation(data);
   if (error) return { status: 'invalid', message: error.details[0].message };
 
@@ -75,7 +75,7 @@ export const editUser = async (data, id, img) => {
   }
 };
 
-export const editPassword = async (data, id) => {
+const editPassword = async (data, id) => {
   const { error } = passwdEditValidation(data);
   if (error) return { status: 'invalid', message: error.details[0].message };
 
@@ -112,7 +112,7 @@ export const editPassword = async (data, id) => {
   }
 };
 
-export const toggleFavorites = async (data, id) => {
+const toggleFavorites = async (data, id) => {
   const user = await User.findOne({ _id: id });
   if (!user) return { status: 'invalid', message: 'User not found.' };
 
@@ -154,7 +154,7 @@ export const toggleFavorites = async (data, id) => {
   }
 };
 
-export const deleteUser = async (id) => {
+const deleteUser = async (id) => {
   const userExist = await User.findOne({ _id: id });
 
   if (!userExist || userExist.status === isInActive) return { status: 'invalid', message: 'User not found' };

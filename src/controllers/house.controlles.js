@@ -1,38 +1,174 @@
 import House from '../models/house';
 
-//Dodawanie domu 
-export const createHouse = async (data) => {
-  const house = new House(data);
-  console.log(data)
+const createHouse = async (data, img) => {
+  if (img === undefined || img.length === 0) {
+    img = [''];
+  }
+
   try {
-    const newHouse = await house.save();
+    const newHouse = await House.create({
+      email: data.email,
+      country: data.country,
+      province: data.province,
+      city: data.city,
+      street: data.street,
+      houseNr: data.houseNr,
+      yearBuilt: data.yearBuilt,
+      price: data.price,
+      dimension: data.dimension,
+      floorsInBuilding: data.floorsInBuilding,
+      floor: data.floor,
+      roomsNumber: data.roomsNumber,
+      bathroomNumber: data.bathroomNumber,
+      otherFeatures: data.otherFeatures.map((feature) => feature),
+      descriptionField: data.descriptionField,
+      images: img.map((img) => (img.path ? img.path : '')),
+    });
+
     return { status: 'succes', newHouse };
-  } catch(e) {
-    return { status: 'invalid', message: e};
+  } catch (error) {
+    return { status: 'invalid', message: error };
   }
 };
 
+const editHouse = async (data, id, img) => {
+  const addedImages = [];
+  const deletedImages = [];
+  const addedFeatures = [];
+  const deletedFeatures = [];
+  const house = await House.find({ _id: id });
+  if (house[0] === undefined) return { status: 'invalid', message: 'House was not found.' };
 
-//Edycja domu
-export const editHouse = async (data, id) => {
+  if (img === undefined || img.length === 0) {
+    img = [''];
+  }
+
+  let arrayOfExistingImages = house[0].images.map((image) => image.split('-')).map((nameImg) => nameImg[1]);
+  const arrayOfIncomingImages = img.map((image) => (image.originalname ? image.originalname : ''));
+  let arrayOfExistingFeatures = house[0].otherFeatures;
+  const arrayOfIncomingFeatures = data.otherFeatures;
+
+  for (const i in arrayOfExistingImages) {
+    if (!arrayOfIncomingImages.includes(arrayOfExistingImages[i]) || !arrayOfExistingImages[i] === '') {
+      deletedImages.push(arrayOfExistingImages[i]);
+    }
+  }
+  for (const i in arrayOfIncomingImages) {
+    if (!arrayOfExistingImages.includes(arrayOfIncomingImages[i])) {
+      addedImages.push(arrayOfIncomingImages[i]);
+    }
+  }
+  for (let i in deletedImages) {
+    if (arrayOfExistingImages.includes(deletedImages[i])) {
+      arrayOfExistingImages = arrayOfExistingImages.filter((item) => item !== deletedImages[i]);
+    }
+  }
+
+  if (addedImages.length) {
+    addedImages.map((item) => arrayOfExistingImages.push(item));
+  }
+
+  arrayOfExistingImages = arrayOfExistingImages.filter((item, index) => arrayOfExistingImages.indexOf(item) === index);
+
+  if (arrayOfExistingImages[0] !== '') {
+    arrayOfExistingImages = arrayOfExistingImages.map((item) => 'src\\uploads\\images\\' + Date.now() + '-' + item);
+  }
+
+  for (const i in arrayOfExistingFeatures) {
+    if (arrayOfIncomingFeatures) {
+      if (!arrayOfIncomingFeatures.includes(arrayOfExistingFeatures[i]) || !arrayOfExistingFeatures[i] === '') {
+        deletedFeatures.push(arrayOfExistingFeatures[i]);
+      }
+    }
+  }
+  for (const i in arrayOfIncomingFeatures) {
+    if (!arrayOfExistingFeatures.includes(arrayOfIncomingFeatures[i])) {
+      addedFeatures.push(arrayOfIncomingFeatures[i]);
+    }
+  }
+  for (let i in deletedFeatures) {
+    if (arrayOfExistingFeatures.includes(deletedFeatures[i])) {
+      arrayOfExistingFeatures = arrayOfExistingFeatures.filter((item) => item !== deletedFeatures[i]);
+    }
+  }
+  if (addedFeatures.length) {
+    addedFeatures.map((item) => arrayOfExistingFeatures.push(item));
+  }
+
+  arrayOfExistingFeatures = arrayOfExistingFeatures.filter(
+    (item, index) => arrayOfExistingFeatures.indexOf(item) === index
+  );
+
   try {
     const house = await House.findOneAndUpdate(
       {
         _id: id,
       },
-      data,
+      {
+        data,
+        otherFeatures: arrayOfExistingFeatures.map((feature) => feature),
+        images: arrayOfExistingImages.map((img) => img),
+      },
+      { new: true }
+    );
+
+    if (!house) return { status: 'invalid', message: 'House not found' };
+    return { data: house, message: 'Updated' };
+  } catch (error) {
+    return { status: 'invalid', message: error };
+  }
+};
+//
+//
+//
+//
+
+const editStatusAccepted = async (data, id) => {
+  // 0 - niezaakceptowany, 1 - do akcepracji, 2 - zaakceptowany
+  const house = await House.find({ _id: id });
+  if (house[0] === undefined) return { status: 'invalid', message: 'House was not found.' };
+
+  try {
+    const house = await House.findOneAndUpdate(
+      {
+        _id: id,
+      },
+      {
+        isAccepted: data.isAccepted,
+      },
       { new: true }
     );
     if (!house) return { status: 'invalid', message: 'House not found' };
     return { data: house, message: 'Updated' };
-  } catch {
-    return { status: 'invalid', message: 'House not found' };
+  } catch (error) {
+    return { status: 'invalid', message: error };
   }
 };
 
+const editHouseStatusExist = async (data, id) => {
+  // 0 - niezarezerwowany, 1 - do rezerwacji, 2 - zarezerwowany, 3 - archiwizowany
+  const house = await House.find({ _id: id });
+  if (house[0] === undefined) return { status: 'invalid', message: 'House was not found.' };
 
-// Usuwanie/Usuwanie domu tutaj findOneAndUpdate na archiwizowany. W data ma przyść czy usuwamy czy przywracamy
-export const deleteHouse = async (data, id) => {
+  try {
+    const house = await House.findOneAndUpdate(
+      {
+        _id: id,
+      },
+      {
+        isExist: data.isExist,
+      },
+      { new: true }
+    );
+
+    if (!house) return { status: 'invalid', message: 'House not found' };
+    return { data: house, message: 'Updated' };
+  } catch (error) {
+    return { status: 'invalid', message: error };
+  }
+};
+
+const deleteHouse = async (data, id) => {
   const house = await House.findOneAndDelete({ _id: id });
   if (!house || !house._id) {
     return { status: 'invalid', message: 'House was not found.' };
@@ -41,5 +177,4 @@ export const deleteHouse = async (data, id) => {
   return { message: 'House was deleted.' };
 };
 
-//Dodawanie/Usuwanie z ulubionych
-//Akceptowanie/Odrzucanie 
+module.exports = { createHouse, editHouse, deleteHouse, editStatusAccepted, editHouseStatusExist };

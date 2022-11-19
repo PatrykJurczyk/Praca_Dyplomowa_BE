@@ -55,6 +55,7 @@ const HouseSchema = mongoose.Schema(
 
     floor: {
       type: Number,
+      default: '',
     },
 
     roomsNumber: {
@@ -82,13 +83,12 @@ const HouseSchema = mongoose.Schema(
 
     isAccepted: {
       type: Number,
-      default: 0, // 0 - niezaakceptowany, 1 - do akcepracji, 2 - zaakceptowany
+      default: 0,
     },
 
-    // To przemyśleć i dorobić na froncie jakiś design i gdzie się to ma robić
-    isReserved: {
+    isExist: {
       type: Number,
-      default: 0, // 0 - niezarezerwowany, 1 - do rezerwacji, 2 - zarezerwowany, 3 - archiwizowany
+      default: 0,
     },
   },
   { timestamps: true }
