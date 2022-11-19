@@ -14,16 +14,19 @@ const validateField = {
     'string.empty': `Password must contain value`,
     'any.required': `Password is a required field`,
   }),
+  phone: Joi.string().pattern(new RegExp('^[0-9]+$')).length(9).messages({
+    'string.pattern.base': `Phone number must be valid`,
+    'string.length': `Phone number length must be 9 characters long`,
+    'string.empty': `Phone number must contain value`,
+  }),
 };
 
 const registerValidation = (data) => {
   const schemaUser = Joi.object({
-    name: validateField.name.required(),
-    photo: Joi.string(),
+    name: Joi.string(),
     email: validateField.email.required(),
     password: validateField.password,
     passwordRepeat: validateField.password,
-    role: Joi.string(),
   });
 
   return schemaUser.validate(data);
@@ -41,8 +44,8 @@ const loginValidation = (data) => {
 const editValidation = (data) => {
   const schemaUser = Joi.object({
     name: validateField.name,
-    photo: Joi.string(),
-    role: Joi.string(),
+    avatar: Joi.string(),
+    phone: validateField.phone,
   });
 
   return schemaUser.validate(data);

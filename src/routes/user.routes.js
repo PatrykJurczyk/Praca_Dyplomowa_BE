@@ -1,5 +1,13 @@
 const { StatusCodes } = require('http-status-codes');
-const { createUser, deleteUser, editPassword, editUser, loginUser } = require('../controllers/user.controllers');
+const {
+  createUser,
+  deleteUser,
+  editPassword,
+  editUser,
+  loginUser,
+  toggleFavorites,
+} = require('../controllers/user.controllers');
+import uploadFilesMiddleware from '../middlewares/upload';
 const auth = require('../middlewares/verifyToken');
 const User = require('../models/user');
 
@@ -25,8 +33,13 @@ const userRoutes = (router) => {
     return res.status(StatusCodes.OK).json(response);
   });
 
-  router.patch('/users/:id', auth, async (req, res) => {
-    const response = await editUser(req.body, req.params.id);
+  router.post('/logout', (req, res) => {
+    res.clearCookie('auth');
+    return res.status(StatusCodes.OK).json({ message: 'Logged out' });
+  });
+
+  router.patch('/users/:id', uploadFilesMiddleware, auth, async (req, res) => {
+    const response = await editUser(req.body, req.params.id, req.files);
 
     if (response.status === 'invalid') {
       return res.status(StatusCodes.BAD_REQUEST).json(response);
@@ -55,10 +68,15 @@ const userRoutes = (router) => {
 
     return res.status(StatusCodes.OK).json(response);
   });
-  
-  router.post('/logout', (req, res) => {
-    res.clearCookie('auth');
-    return res.status(StatusCodes.OK).json({ message: 'Logged out' });
+
+  router.patch('/users/:id/favorite', async (req, res) => {
+    const response = await toggleFavorites(req.body, req.params.id);
+
+    if (response.status === 'invalid') {
+      return res.status(StatusCodes.BAD_REQUEST).json(response);
+    }
+
+    return res.status(StatusCodes.OK).json(response);
   });
 
   router.get('/users', async (req, res) => {
