@@ -64,7 +64,7 @@ const editUser = async (data, id, img) => {
       {
         name: data.name,
         phone: data.phone,
-        avatar: img[0].path,
+        avatar: img[0].path.replace('src\\', 'http://localhost:3001/'),
       },
       { new: true }
     );

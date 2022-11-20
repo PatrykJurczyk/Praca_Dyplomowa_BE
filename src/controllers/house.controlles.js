@@ -7,6 +7,7 @@ const createHouse = async (data, img) => {
 
   try {
     const newHouse = await House.create({
+      owner: data.owner,
       email: data.email,
       country: data.country,
       province: data.province,
@@ -43,8 +44,9 @@ const editHouse = async (data, id, img) => {
     img = [''];
   }
 
-  let arrayOfExistingImages = house[0].images.map((image) => image.split('-')).map((nameImg) => nameImg[1]);
-  const arrayOfIncomingImages = img.map((image) => (image.originalname ? image.originalname : ''));
+  let arrayOfExistingImages = house[0].images.map((image) => image.split('-')).map((nameImg) => nameImg);
+
+  const arrayOfIncomingImages = img.map((image) => image.path ? image.path.split('-') : '')
   let arrayOfExistingFeatures = house[0].otherFeatures;
   const arrayOfIncomingFeatures = data.otherFeatures;
 
@@ -69,10 +71,13 @@ const editHouse = async (data, id, img) => {
   }
 
   arrayOfExistingImages = arrayOfExistingImages.filter((item, index) => arrayOfExistingImages.indexOf(item) === index);
+  
 
   if (arrayOfExistingImages[0] !== '') {
-    arrayOfExistingImages = arrayOfExistingImages.map((item) => 'src\\uploads\\images\\' + Date.now() + '-' + item);
+    arrayOfExistingImages = arrayOfExistingImages.map((item) => item.join('-'));
   }
+
+  arrayOfExistingImages =arrayOfExistingImages.map(item => item.replace('src\\', 'http://localhost:3001/'))
 
   for (const i in arrayOfExistingFeatures) {
     if (arrayOfIncomingFeatures) {

@@ -10,11 +10,13 @@ const cors = require('cors');
 const app = express();
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://localhost:4200'],
+    origin: 'http://localhost:4200',
   })
 );
 // set security HTTP headers
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  }));
 
 // parse json request body
 app.use(express.json());
