@@ -38,7 +38,7 @@ const userRoutes = (router) => {
     return res.status(StatusCodes.OK).json({ message: 'Logged out' });
   });
 
-  router.patch('/users/:id', uploadFilesMiddleware, auth, async (req, res) => {
+  router.patch('/users/:id', uploadFilesMiddleware, async (req, res) => {
     const response = await editUser(req.body, req.params.id, req.files);
 
     if (response.status === 'invalid') {
