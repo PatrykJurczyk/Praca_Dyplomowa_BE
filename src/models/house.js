@@ -83,7 +83,7 @@ const HouseSchema = mongoose.Schema(
 
     isAccepted: {
       type: Number,
-      default: 0,
+      default: 1,
     },
 
     isExist: {
