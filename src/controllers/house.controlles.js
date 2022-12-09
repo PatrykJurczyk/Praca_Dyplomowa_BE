@@ -20,7 +20,7 @@ const createHouse = async (data, img) => {
       floor: data.floor,
       roomsNumber: data.roomsNumber,
       bathroomNumber: data.bathroomNumber,
-      otherFeatures: data.otherFeatures.split(',').map((feature) => feature),
+      otherFeatures: data.otherFeatures.map((feature) => feature),
       descriptionField: data.descriptionField,
       images: img.map((img) => (img.path ? img.path.replace('src\\', 'http://localhost:3001/') : '')),
     });
