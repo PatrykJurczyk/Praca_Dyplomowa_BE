@@ -4,7 +4,6 @@ const createHouse = async (data, img) => {
   if (img === undefined || img.length === 0) {
     img = [''];
   }
-
   try {
     const newHouse = await House.create({
       owner: data.owner,
@@ -21,9 +20,9 @@ const createHouse = async (data, img) => {
       floor: data.floor,
       roomsNumber: data.roomsNumber,
       bathroomNumber: data.bathroomNumber,
-      otherFeatures: data.otherFeatures.map((feature) => feature),
+      otherFeatures: data.otherFeatures.split(',').map((feature) => feature),
       descriptionField: data.descriptionField,
-      images: img.map((img) => (img.path ? img.path : '')),
+      images: img.map((img) => (img.path ? img.path.replace('src\\', 'http://localhost:3001/') : '')),
     });
 
     return { status: 'succes', newHouse };
@@ -33,6 +32,7 @@ const createHouse = async (data, img) => {
 };
 
 const editHouse = async (data, id, img) => {
+
   const addedImages = [];
   const deletedImages = [];
   const addedFeatures = [];
@@ -77,7 +77,7 @@ const editHouse = async (data, id, img) => {
     arrayOfExistingImages = arrayOfExistingImages.map((item) => item.join('-'));
   }
 
-  arrayOfExistingImages =arrayOfExistingImages.map(item => item.replace('src\\', 'http://localhost:3001/'))
+  arrayOfExistingImages = arrayOfExistingImages.map(item => item.replace('src\\', 'http://localhost:3001/'))
 
   for (const i in arrayOfExistingFeatures) {
     if (arrayOfIncomingFeatures) {
