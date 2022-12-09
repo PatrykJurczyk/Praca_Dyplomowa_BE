@@ -90,6 +90,11 @@ const HouseSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    reservedBy: {
+      type: String,
+      default: '',
+    }
   },
   { timestamps: true }
 );

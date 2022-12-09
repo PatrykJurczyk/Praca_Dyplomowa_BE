@@ -1,4 +1,5 @@
 import House from '../models/house';
+const cron = require('node-cron');
 
 const createHouse = async (data, img) => {
   if (img === undefined || img.length === 0) {
@@ -32,7 +33,6 @@ const createHouse = async (data, img) => {
 };
 
 const editHouse = async (data, id, img) => {
-
   const addedImages = [];
   const deletedImages = [];
   const addedFeatures = [];
@@ -86,11 +86,13 @@ const editHouse = async (data, id, img) => {
       }
     }
   }
+  
   for (const i in arrayOfIncomingFeatures) {
     if (!arrayOfExistingFeatures.includes(arrayOfIncomingFeatures[i])) {
       addedFeatures.push(arrayOfIncomingFeatures[i]);
     }
   }
+
   for (let i in deletedFeatures) {
     if (arrayOfExistingFeatures.includes(deletedFeatures[i])) {
       arrayOfExistingFeatures = arrayOfExistingFeatures.filter((item) => item !== deletedFeatures[i]);
@@ -123,10 +125,6 @@ const editHouse = async (data, id, img) => {
     return { status: 'invalid', message: error };
   }
 };
-//
-//
-//
-//
 
 const editStatusAccepted = async (data, id) => {
   // 0 - niezaakceptowany, 1 - do akcepracji, 2 - zaakceptowany
@@ -162,6 +160,7 @@ const editHouseStatusExist = async (data, id) => {
       },
       {
         isExist: data.isExist,
+        reservedBy: data.reservedBy
       },
       { new: true }
     );
@@ -181,5 +180,31 @@ const deleteHouse = async (data, id) => {
 
   return { message: 'House was deleted.' };
 };
+
+cron.schedule('0 0 * * *', async () => {
+  const houses = await House.find()
+
+  houses.forEach(async (value) => {
+    if(value.isExist === 2){
+      try {
+        const house = await House.findOneAndUpdate(
+          {
+            _id: value._id,
+          },
+          {
+            isExist: 0,
+            reservedBy: ''
+          },
+          { new: true }
+        );
+    
+        if (!house) return { status: 'invalid', message: 'House not found' };
+        return { data: house, message: 'Updated' };
+      } catch (error) {
+        return { status: 'invalid', message: error };
+      }
+    }
+  })
+});
 
 module.exports = { createHouse, editHouse, deleteHouse, editStatusAccepted, editHouseStatusExist };
