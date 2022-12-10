@@ -52,8 +52,10 @@ const editUser = async (data, id, img) => {
   const { error } = editValidation(data);
   if (error) return { status: 'invalid', message: error.details[0].message };
 
+  const userExist = await User.find({ _id: id });
+
   if (img === undefined || img.length === 0) {
-    img = [''];
+    img = [userExist[0].avatar];
   }
 
   try {
@@ -85,7 +87,8 @@ const editPassword = async (data, id) => {
   const validOldPass = await bcrypt.compare(data.password, user.password);
   if (!validOldPass) return { status: 'invalid', message: 'Stare hasło jest błędne.' };
 
-  if (data.newPassword !== data.newPasswordRepeat) return { status: 'invalid', message: 'Nowe hasło nie pasują do siebie.' };
+  if (data.newPassword !== data.newPasswordRepeat)
+    return { status: 'invalid', message: 'Nowe hasło nie pasują do siebie.' };
 
   const difOldNewPass = await bcrypt.compare(data.newPasswordRepeat, user.password);
   if (difOldNewPass) return { status: 'invalid', message: 'Stare hasło jak i nowe hasło muszą się róznić.' };
@@ -157,7 +160,8 @@ const toggleFavorites = async (data, id) => {
 const deleteUser = async (id) => {
   const userExist = await User.findOne({ _id: id });
 
-  if (!userExist || userExist.status === isInActive) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
+  if (!userExist || userExist.status === isInActive)
+    return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
 
   await User.findOneAndUpdate(
     {
