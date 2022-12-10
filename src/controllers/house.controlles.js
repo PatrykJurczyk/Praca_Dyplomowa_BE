@@ -38,7 +38,7 @@ const editHouse = async (data, id, img) => {
   const addedFeatures = [];
   const deletedFeatures = [];
   const house = await House.find({ _id: id });
-  if (house[0] === undefined) return { status: 'invalid', message: 'House was not found.' };
+  if (house[0] === undefined) return { status: 'invalid', message: 'Dom nie został odnaleziony.' };
 
   if (img === undefined || img.length === 0) {
     img = [''];
@@ -46,7 +46,7 @@ const editHouse = async (data, id, img) => {
 
   let arrayOfExistingImages = house[0].images.map((image) => image.split('-')).map((nameImg) => nameImg);
 
-  const arrayOfIncomingImages = img.map((image) => image.path ? image.path.split('-') : '')
+  const arrayOfIncomingImages = img.map((image) => (image.path ? image.path.split('-') : ''));
   let arrayOfExistingFeatures = house[0].otherFeatures;
   const arrayOfIncomingFeatures = data.otherFeatures;
 
@@ -71,13 +71,12 @@ const editHouse = async (data, id, img) => {
   }
 
   arrayOfExistingImages = arrayOfExistingImages.filter((item, index) => arrayOfExistingImages.indexOf(item) === index);
-  
 
   if (arrayOfExistingImages[0] !== '') {
     arrayOfExistingImages = arrayOfExistingImages.map((item) => item.join('-'));
   }
 
-  arrayOfExistingImages = arrayOfExistingImages.map(item => item.replace('src\\', 'http://localhost:3001/'))
+  arrayOfExistingImages = arrayOfExistingImages.map((item) => item.replace('src\\', 'http://localhost:3001/'));
 
   for (const i in arrayOfExistingFeatures) {
     if (arrayOfIncomingFeatures) {
@@ -86,7 +85,7 @@ const editHouse = async (data, id, img) => {
       }
     }
   }
-  
+
   for (const i in arrayOfIncomingFeatures) {
     if (!arrayOfExistingFeatures.includes(arrayOfIncomingFeatures[i])) {
       addedFeatures.push(arrayOfIncomingFeatures[i]);
@@ -119,17 +118,16 @@ const editHouse = async (data, id, img) => {
       { new: true }
     );
 
-    if (!house) return { status: 'invalid', message: 'House not found' };
-    return { data: house, message: 'Updated' };
+    if (!house) return { status: 'invalid', message: 'Dom nie został odnaleziony.' };
+    return { data: house, message: 'Zaktualizowano' };
   } catch (error) {
     return { status: 'invalid', message: error };
   }
 };
 
 const editStatusAccepted = async (data, id) => {
-  // 0 - niezaakceptowany, 1 - do akcepracji, 2 - zaakceptowany
   const house = await House.find({ _id: id });
-  if (house[0] === undefined) return { status: 'invalid', message: 'House was not found.' };
+  if (house[0] === undefined) return { status: 'invalid', message: 'Dom nie został odnaleziony.' };
 
   try {
     const house = await House.findOneAndUpdate(
@@ -141,17 +139,16 @@ const editStatusAccepted = async (data, id) => {
       },
       { new: true }
     );
-    if (!house) return { status: 'invalid', message: 'House not found' };
-    return { data: house, message: 'Updated' };
+    if (!house) return { status: 'invalid', message: 'Dom nie został odnaleziony.' };
+    return { data: house, message: 'Zaktualizowano' };
   } catch (error) {
     return { status: 'invalid', message: error };
   }
 };
 
 const editHouseStatusExist = async (data, id) => {
-  // 0 - niezarezerwowany, 1 - do rezerwacji, 2 - zarezerwowany, 3 - archiwizowany
   const house = await House.find({ _id: id });
-  if (house[0] === undefined) return { status: 'invalid', message: 'House was not found.' };
+  if (house[0] === undefined) return { status: 'invalid', message: 'Dom nie został odnaleziony.' };
 
   try {
     const house = await House.findOneAndUpdate(
@@ -160,13 +157,13 @@ const editHouseStatusExist = async (data, id) => {
       },
       {
         isExist: data.isExist,
-        reservedBy: data.reservedBy
+        reservedBy: data.reservedBy,
       },
       { new: true }
     );
 
-    if (!house) return { status: 'invalid', message: 'House not found' };
-    return { data: house, message: 'Updated' };
+    if (!house) return { status: 'invalid', message: 'Dom nie został odnaleziony.' };
+    return { data: house, message: 'Zaktualizowano' };
   } catch (error) {
     return { status: 'invalid', message: error };
   }
@@ -175,17 +172,17 @@ const editHouseStatusExist = async (data, id) => {
 const deleteHouse = async (data, id) => {
   const house = await House.findOneAndDelete({ _id: id });
   if (!house || !house._id) {
-    return { status: 'invalid', message: 'House was not found.' };
+    return { status: 'invalid', message: 'Dom nie został odnaleziony.' };
   }
 
-  return { message: 'House was deleted.' };
+  return { message: 'Dom został usunięty.' };
 };
 
 cron.schedule('0 0 * * *', async () => {
-  const houses = await House.find()
+  const houses = await House.find();
 
   houses.forEach(async (value) => {
-    if(value.isExist === 2){
+    if (value.isExist === 2) {
       try {
         const house = await House.findOneAndUpdate(
           {
@@ -193,18 +190,18 @@ cron.schedule('0 0 * * *', async () => {
           },
           {
             isExist: 0,
-            reservedBy: ''
+            reservedBy: '',
           },
           { new: true }
         );
-    
-        if (!house) return { status: 'invalid', message: 'House not found' };
-        return { data: house, message: 'Updated' };
+
+        if (!house) return { status: 'invalid', message: 'Dom nie został odnaleziony.' };
+        return { data: house, message: 'Zaktualizowano' };
       } catch (error) {
         return { status: 'invalid', message: error };
       }
     }
-  })
+  });
 });
 
 module.exports = { createHouse, editHouse, deleteHouse, editStatusAccepted, editHouseStatusExist };

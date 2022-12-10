@@ -2,22 +2,22 @@ const Joi = require('@hapi/joi');
 
 const validateField = {
   name: Joi.string().messages({
-    'string.empty': `Name must contain value`,
-    'any.required': `Name is a required field`,
+    'string.empty': `Imie nie może być puste.`,
+    'any.required': `Imie jest wymaganym polem.`,
   }),
   email: Joi.string().messages({
-    'string.empty': `Email must contain value`,
-    'any.required': `Email is a required field`,
+    'string.empty': `Email nie może być puste.`,
+    'any.required': `Email jest wymaganym polem.`,
   }),
   password: Joi.string().min(6).required().messages({
-    'string.min': `Password length must be at least 6 characters long`,
-    'string.empty': `Password must contain value`,
-    'any.required': `Password is a required field`,
+    'string.min': `Hasło musi mieć długość minimum 6 znaków.`,
+    'string.empty': `Hasło nie może być puste.`,
+    'any.required': `Hasło jest wymaganym polem.`,
   }),
   phone: Joi.string().pattern(new RegExp('^[0-9]+$')).length(9).messages({
-    'string.pattern.base': `Phone number must be valid`,
-    'string.length': `Phone number length must be 9 characters long`,
-    'string.empty': `Phone number must contain value`,
+    'string.pattern.base': `Number telefonu musi być poprawny.`,
+    'string.length': `Number telefonu musi mieć 9 cyfr.`,
+    'string.empty': `Number telefonu nie może być puste.`,
   }),
 };
 

@@ -14,9 +14,9 @@ const createUser = async (data) => {
 
   const userExist = await User.find({ email: data.email, status: { $eq: isActive } });
 
-  if (userExist[0] && userExist[0].status === isActive) return { status: 'invalid', message: 'Email already exists' };
+  if (userExist[0] && userExist[0].status === isActive) return { status: 'invalid', message: 'Email jest już zajęty.' };
 
-  if (data.password !== data.passwordRepeat) return { status: 'invalid', message: 'The passwords do not match.' };
+  if (data.password !== data.passwordRepeat) return { status: 'invalid', message: 'Podaj takie same hasła.' };
 
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(data.password, salt);
@@ -28,7 +28,7 @@ const createUser = async (data) => {
 
     return user;
   } catch (err) {
-    return { status: 'invalid', message: 'Email already exists', err };
+    return { status: 'invalid', message: 'Email jest już zajęty.', err };
   }
 };
 
@@ -38,10 +38,10 @@ const loginUser = async (data) => {
 
   const activeUser = await User.find({ email: data.email, status: { $eq: isActive } });
   if (!activeUser[0] || activeUser[0].status === isInActive)
-    return { status: 'invalid', message: 'Email or password is wrong' };
+    return { status: 'invalid', message: 'Podaj poprawny email i hasło.' };
 
   const validPass = await bcrypt.compare(data.password, activeUser[0].password);
-  if (!validPass) return { status: 'invalid', message: 'Email or password is wrong' };
+  if (!validPass) return { status: 'invalid', message: 'Podaj poprawny email i hasło.' };
 
   const token = jsonwebtoken.sign({ _id: activeUser[0]._id }, process.env.TOKEN_SECRET);
 
@@ -68,8 +68,8 @@ const editUser = async (data, id, img) => {
       },
       { new: true }
     );
-    if (!user) return { status: 'invalid', message: 'User not found' };
-    return { data: user, message: 'Updated' };
+    if (!user) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
+    return { data: user, message: 'Zaktualizowano.' };
   } catch (error) {
     return { status: 'invalid', message: error };
   }
@@ -80,15 +80,15 @@ const editPassword = async (data, id) => {
   if (error) return { status: 'invalid', message: error.details[0].message };
 
   const user = await User.findOne({ _id: id });
-  if (!user) return { status: 'invalid', message: 'User not found.' };
+  if (!user) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
 
   const validOldPass = await bcrypt.compare(data.password, user.password);
-  if (!validOldPass) return { status: 'invalid', message: 'Old password is wrong.' };
+  if (!validOldPass) return { status: 'invalid', message: 'Stare hasło jest błędne.' };
 
-  if (data.newPassword !== data.newPasswordRepeat) return { status: 'invalid', message: 'The passwords do not match.' };
+  if (data.newPassword !== data.newPasswordRepeat) return { status: 'invalid', message: 'Nowe hasło nie pasują do siebie.' };
 
   const difOldNewPass = await bcrypt.compare(data.newPasswordRepeat, user.password);
-  if (difOldNewPass) return { status: 'invalid', message: 'The old password and the new password must be different.' };
+  if (difOldNewPass) return { status: 'invalid', message: 'Stare hasło jak i nowe hasło muszą się róznić.' };
 
   data.password = data.newPasswordRepeat;
 
@@ -105,8 +105,8 @@ const editPassword = async (data, id) => {
       },
       { new: true }
     );
-    if (!user) return { status: 'invalid', message: 'User not found' };
-    return { data: user, message: 'Updated' };
+    if (!user) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
+    return { data: user, message: 'Zaktualizowano.' };
   } catch (error) {
     return { status: 'invalid', message: error };
   }
@@ -114,7 +114,7 @@ const editPassword = async (data, id) => {
 
 const toggleFavorites = async (data, id) => {
   const user = await User.findOne({ _id: id });
-  if (!user) return { status: 'invalid', message: 'User not found.' };
+  if (!user) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
 
   const dataFav = data.favorites;
   const fav = user.favorites;
@@ -130,8 +130,8 @@ const toggleFavorites = async (data, id) => {
         },
         { new: true }
       );
-      if (!user) return { status: 'invalid', message: 'User not found' };
-      return { data: user, message: 'Updated' };
+      if (!user) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
+      return { data: user, message: 'Zaktualizowano.' };
     } catch (error) {
       return { status: 'invalid', message: error };
     }
@@ -147,8 +147,8 @@ const toggleFavorites = async (data, id) => {
       },
       { new: true }
     );
-    if (!user) return { status: 'invalid', message: 'User not found' };
-    return { data: user, message: 'Updated' };
+    if (!user) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
+    return { data: user, message: 'Zaktualizowano.' };
   } catch (error) {
     return { status: 'invalid', message: error };
   }
@@ -157,7 +157,7 @@ const toggleFavorites = async (data, id) => {
 const deleteUser = async (id) => {
   const userExist = await User.findOne({ _id: id });
 
-  if (!userExist || userExist.status === isInActive) return { status: 'invalid', message: 'User not found' };
+  if (!userExist || userExist.status === isInActive) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
 
   await User.findOneAndUpdate(
     {
@@ -166,7 +166,7 @@ const deleteUser = async (id) => {
     { status: isInActive }
   );
 
-  return { message: 'The user has been blocked' };
+  return { message: 'Użytkownik został zablokowany.' };
 };
 
 module.exports = { createUser, loginUser, editUser, editPassword, toggleFavorites, deleteUser };

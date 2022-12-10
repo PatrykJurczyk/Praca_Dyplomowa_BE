@@ -35,7 +35,7 @@ const userRoutes = (router) => {
 
   router.post('/logout', (req, res) => {
     res.clearCookie('auth');
-    return res.status(StatusCodes.OK).json({ message: 'Logged out' });
+    return res.status(StatusCodes.OK).json({ message: 'Wylogowano.' });
   });
 
   router.patch('/users/:id', uploadFilesMiddleware, async (req, res) => {
