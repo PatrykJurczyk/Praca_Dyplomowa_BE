@@ -22,7 +22,7 @@ const createUser = async (data) => {
   const hashedPassword = await bcrypt.hash(data.password, salt);
   try {
     const user = await User.create({
-      email: data.email,
+      email: data.email.toLowerCase(),
       password: hashedPassword,
     });
 
@@ -36,7 +36,7 @@ const loginUser = async (data) => {
   const { error } = loginValidation(data);
   if (error) return { status: 'invalid', message: error.details[0].message };
 
-  const activeUser = await User.find({ email: data.email, status: { $eq: isActive } });
+  const activeUser = await User.find({ email: data.email.toLowerCase(), status: { $eq: isActive } });
   if (!activeUser[0] || activeUser[0].status === isInActive)
     return { status: 'invalid', message: 'Podaj poprawny email i hasło.' };
 
