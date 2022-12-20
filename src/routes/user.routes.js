@@ -2,6 +2,7 @@ const { StatusCodes } = require('http-status-codes');
 const {
   createUser,
   deleteUser,
+  restoreUser,
   editPassword,
   editUser,
   loginUser,
@@ -61,6 +62,16 @@ const userRoutes = (router) => {
   router.patch('/users/:id/deletion', async (req, res) => {
     const response = await deleteUser(req.params.id);
     res.clearCookie('auth');
+
+    if (response.status === 'invalid') {
+      return res.status(StatusCodes.BAD_REQUEST).json(response);
+    }
+
+    return res.status(StatusCodes.OK).json(response);
+  });
+
+  router.patch('/users/:id/restore', async (req, res) => {
+    const response = await restoreUser(req.params.id);
 
     if (response.status === 'invalid') {
       return res.status(StatusCodes.BAD_REQUEST).json(response);

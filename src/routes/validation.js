@@ -46,6 +46,7 @@ const editValidation = (data) => {
     name: validateField.name,
     avatar: Joi.string(),
     phone: validateField.phone,
+    role: Joi.string()
   });
 
   return schemaUser.validate(data);

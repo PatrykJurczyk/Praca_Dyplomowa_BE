@@ -67,6 +67,7 @@ const editUser = async (data, id, img) => {
         name: data.name,
         phone: data.phone,
         avatar: img[0].path ? img[0].path.replace('src\\', 'http://localhost:3001/') : img[0],
+        role: data.role,
       },
       { new: true }
     );
@@ -173,4 +174,20 @@ const deleteUser = async (id) => {
   return { message: 'Użytkownik został zablokowany.' };
 };
 
-module.exports = { createUser, loginUser, editUser, editPassword, toggleFavorites, deleteUser };
+const restoreUser = async (id) => {
+  const userExist = await User.findOne({ _id: id });
+
+  if (!userExist)
+    return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
+
+  await User.findOneAndUpdate(
+    {
+      _id: id,
+    },
+    { status: isActive }
+  );
+
+  return { message: 'Użytkownik został zablokowany.' };
+};
+
+module.exports = { createUser, loginUser, editUser, editPassword, toggleFavorites, deleteUser, restoreUser };
