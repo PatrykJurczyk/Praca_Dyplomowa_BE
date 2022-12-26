@@ -8,7 +8,7 @@ const {
   loginUser,
   toggleFavorites,
 } = require('../controllers/user.controllers');
-import uploadFilesMiddleware from '../middlewares/upload';
+const uploadFilesMiddleware = require('../middlewares/upload');
 const auth = require('../middlewares/verifyToken');
 const User = require('../models/user');
 

@@ -3,7 +3,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const bcrypt = require('bcryptjs');
 const request = require('supertest');
-const app = require('../app');
+const app = require('../App');
 
 const User = require('../models/user');
 

@@ -7,7 +7,7 @@ const {
 } = require('../controllers/house.controlles');
 const { StatusCodes } = require('http-status-codes');
 const House = require('../models/house');
-import uploadFilesMiddleware from '../middlewares/upload';
+const uploadFilesMiddleware = require('../middlewares/upload');
 
 const houseRoutes = (router) => {
   router.post('/house', uploadFilesMiddleware, async (req, res) => {

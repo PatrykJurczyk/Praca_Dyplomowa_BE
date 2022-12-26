@@ -1,4 +1,4 @@
-import House from '../models/house';
+const House = require('../models/house');
 const cron = require('node-cron');
 
 const createHouse = async (data, img) => {
