@@ -6,6 +6,7 @@ const logger = require('./utils/logger');
 
 let server;
 
+mongoose.set("strictQuery", false);
 mongoose
   .connect(env.MONGODB_URL, {
     useNewUrlParser: true,
