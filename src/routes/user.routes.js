@@ -7,6 +7,8 @@ const {
   editUser,
   loginUser,
   toggleFavorites,
+  getUser,
+  getUsers,
 } = require('../controllers/user.controllers');
 const uploadFilesMiddleware = require('../middlewares/upload');
 const auth = require('../middlewares/verifyToken');
@@ -91,21 +93,23 @@ const userRoutes = (router) => {
   });
 
   router.get('/users', async (req, res) => {
-    try {
-      const user = await User.find();
-      res.status(200).json(user);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+    const response = await getUsers();
+
+    if (response.status === 'invalid') {
+      return res.status(StatusCodes.BAD_REQUEST).json(response);
     }
+
+    return res.status(StatusCodes.OK).json(response);
   });
 
   router.get('/users/:id', async (req, res) => {
-    try {
-      const user = await User.findOne({ _id: req.params.id });
-      res.status(200).json(user);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+    const response = await getUser(req.params.id);
+
+    if (response.status === 'invalid') {
+      return res.status(StatusCodes.BAD_REQUEST).json(response);
     }
+
+    return res.status(StatusCodes.OK).json(response);
   });
 };
 

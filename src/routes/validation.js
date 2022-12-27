@@ -5,8 +5,9 @@ const validateField = {
     'string.empty': `Imie nie może być puste.`,
     'any.required': `Imie jest wymaganym polem.`,
   }),
-  email: Joi.string().messages({
+  email: Joi.string().email().messages({
     'string.empty': `Email nie może być puste.`,
+    'string.email': `Wprowadź poprawny adress email.`,
     'any.required': `Email jest wymaganym polem.`,
   }),
   password: Joi.string().min(6).required().messages({
@@ -46,7 +47,7 @@ const editValidation = (data) => {
     name: validateField.name,
     avatar: Joi.string(),
     phone: validateField.phone,
-    role: Joi.string()
+    role: Joi.string(),
   });
 
   return schemaUser.validate(data);

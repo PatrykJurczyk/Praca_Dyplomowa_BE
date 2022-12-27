@@ -18,7 +18,7 @@ describe('User model test', () => {
 
   describe('Check a user', () => {
     it('Create a user model', async () => {
-      const user = new User({ name: 'Franek', photo: 'urlPhoto', email: 'email@gmail.com', password: 'Test123' });
+      const user = new User({ name: 'Franek', avatar: 'urlPhoto', email: 'email@gmail.com', password: 'Test123', phone: '123456789' });
       await user.save();
 
       const foundUser = await User.findOne({ id: user._id });
@@ -28,24 +28,32 @@ describe('User model test', () => {
       expect(expectedName).toEqual(actualName);
 
       const expectedPhoto = 'urlPhoto';
-      const actualPhoto = foundUser.photo;
+      const actualPhoto = foundUser.avatar;
       expect(expectedPhoto).toEqual(actualPhoto);
-
-      const expectedTaskCount = 0;
-      const actualTaskCount = foundUser.taskCount;
-      expect(expectedTaskCount).toEqual(actualTaskCount);
-
-      const expectedRole = 'Base';
-      const actualRole = foundUser.role;
-      expect(expectedRole).toEqual(actualRole);
 
       const expectedEmail = 'email@gmail.com';
       const actualEmail = foundUser.email;
       expect(expectedEmail).toEqual(actualEmail);
 
+      const expectedPhone = '123456789';
+      const actualPhone = foundUser.phone;
+      expect(expectedPhone).toEqual(actualPhone);
+
       const expectedPassword = 'Test123';
       const actualPassword = foundUser.password;
       expect(expectedPassword).toEqual(actualPassword);
+
+      const expectedRole = 'User';
+      const actualRole = foundUser.role;
+      expect(expectedRole).toEqual(actualRole);
+
+      const expectedStatus = 1;
+      const actualStatus = foundUser.status;
+      expect(expectedStatus).toEqual(actualStatus);
+
+      const expectedFavoritesLength = 0;
+      const actualFavoritesLength = foundUser.favorites.length;
+      expect(expectedFavoritesLength).toEqual(actualFavoritesLength);
     });
   });
 });

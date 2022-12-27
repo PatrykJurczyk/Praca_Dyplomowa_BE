@@ -12,7 +12,7 @@ const createUser = async (data) => {
 
   if (error) return { status: 'invalid', message: error.details[0].message };
 
-  const userExist = await User.find({ email: data.email, status: { $eq: isActive } });
+  const userExist = await User.find({ email: data.email.toLowerCase(), status: { $eq: isActive } });
 
   if (userExist[0] && userExist[0].status === isActive) return { status: 'invalid', message: 'Email jest już zajęty.' };
 
@@ -28,7 +28,7 @@ const createUser = async (data) => {
 
     return user;
   } catch (err) {
-    return { status: 'invalid', message: 'Email jest już zajęty.', err };
+    return { status: 'invalid', message: 'Email jest już zajęty.' };
   }
 };
 
@@ -53,6 +53,7 @@ const editUser = async (data, id, img) => {
   if (error) return { status: 'invalid', message: error.details[0].message };
 
   const userExist = await User.find({ _id: id });
+  if (!userExist[0]) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
 
   if (img === undefined || img.length === 0) {
     img = [userExist[0].avatar];
@@ -177,8 +178,7 @@ const deleteUser = async (id) => {
 const restoreUser = async (id) => {
   const userExist = await User.findOne({ _id: id });
 
-  if (!userExist)
-    return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
+  if (!userExist) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
 
   await User.findOneAndUpdate(
     {
@@ -187,7 +187,30 @@ const restoreUser = async (id) => {
     { status: isActive }
   );
 
-  return { message: 'Użytkownik został zablokowany.' };
+  return { message: 'Użytkownik został odblokowany.' };
 };
 
-module.exports = { createUser, loginUser, editUser, editPassword, toggleFavorites, deleteUser, restoreUser };
+const getUser = async (id) => {
+  const user = await User.findOne({ _id: id });
+  if (!user) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
+
+  return user;
+};
+
+const getUsers = async () => {
+  const user = await User.find();
+
+  return user;
+};
+
+module.exports = {
+  createUser,
+  loginUser,
+  editUser,
+  editPassword,
+  toggleFavorites,
+  deleteUser,
+  restoreUser,
+  getUser,
+  getUsers,
+};

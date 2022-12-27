@@ -18,10 +18,11 @@ describe('User router test', () => {
 
   test('GET /api/users', async () => {
     const user = await User.create({
-      name: 'Patryk',
-      photo: 'UrlPhoto',
       email: 'patryk@gmail.com',
       password: 'Patryk123',
+      name: 'Patryk',
+      phone: '123456789',
+      avatar: 'UrlPhoto',
     });
 
     await request(app)
@@ -34,23 +35,26 @@ describe('User router test', () => {
 
         // Check the response data
         expect(response.body[0]._id).toBe(user.id);
-        expect(response.body[0].name).toBe(user.name);
-        expect(response.body[0].photo).toBe(user.photo);
-        expect(response.body[0].taskCount).toBe(0);
-        expect(response.body[0].role).toBe('Base');
         expect(response.body[0].email).toBe(user.email);
         expect(response.body[0].password).toBe(user.password);
+        expect(response.body[0].name).toBe(user.name);
+        expect(response.body[0].avatar).toBe(user.avatar);
+        expect(response.body[0].role).toBe('User');
+        expect(response.body[0].status).toBe(1);
+        expect(response.body[0].favorites.length).toBe(0);
       });
   });
 
   test('GET /api/users/:id', async () => {
     const user = await User.create({
-      name: 'Patryk',
-      photo: 'UrlPhoto',
-      taskCount: 6,
-      role: 'Admin',
       email: 'patryk@gmail.com',
       password: 'Patryk123',
+      name: 'Patryk',
+      phone: '123456789',
+      avatar: 'UrlPhoto',
+      role: 'Admin',
+      // status: 1,
+      favorites: ['Pierwszy', 'Drugi'],
     });
 
     await request(app)
@@ -58,25 +62,35 @@ describe('User router test', () => {
       .expect(200)
       .then((response) => {
         // Check the response type and length
-        expect(response.body._id).toBe(user.id);
+        expect(Array.isArray(response.body)).toBe(false);
 
         // Check the response data
         expect(response.body._id).toBe(user.id);
-        expect(response.body.name).toBe(user.name);
-        expect(response.body.photo).toBe(user.photo);
-        expect(response.body.taskCount).toBe(user.taskCount);
-        expect(response.body.role).toBe(user.role);
         expect(response.body.email).toBe(user.email);
         expect(response.body.password).toBe(user.password);
+        expect(response.body.name).toBe(user.name);
+        expect(response.body.avatar).toBe(user.avatar);
+        expect(response.body.role).toBe(user.role);
+        expect(response.body.status).toBe(1);
+        expect(response.body.favorites.length).toBe(user.favorites.length);
+      });
+  });
+
+  test('GET BAD_REQUEST /api/users/:id', async () => {
+    await request(app)
+      .get('/api/users/' + mongoose.Types.ObjectId('4edd40c86762e0fb12000003'))
+      .expect(400)
+      .then((response) => {
+        // Check the response data
+        expect(response.body.message).toBe('Użytkownik nie został odnaleziony.');
       });
   });
 
   test('POST /api/users', async () => {
     const data = {
-      name: 'Patryk',
-      photo: 'UrlPhoto',
       email: 'patrykKox@gmail.com',
       password: 'Patryk123',
+      passwordRepeat: 'Patryk123',
     };
 
     await request(app)
@@ -87,32 +101,35 @@ describe('User router test', () => {
         // Check the response
         const validPass = await bcrypt.compare(data.password, response.body.password);
         expect(response.body._id).toBeTruthy();
-        expect(response.body.name).toBe(data.name);
-        expect(response.body.photo).toBe(data.photo);
-        expect(response.body.taskCount).toBe(0);
-        expect(response.body.role).toBe('Base');
-        expect(response.body.email).toBe(data.email);
+        expect(response.body.name).toBe('');
+        expect(response.body.avatar).toBe('');
+        expect(response.body.role).toBe('User');
+        expect(response.body.favorites.length).toBe(0);
+        expect(response.body.status).toBe(1);
+        expect(response.body.phone).toBe('');
+        expect(response.body.email).toBe(data.email.toLowerCase());
         expect(true).toBe(validPass);
 
         // Check the data in the database
         const user = await User.findOne({ _id: response.body._id });
         const validPass2 = await bcrypt.compare(data.password, user.password);
         expect(user).toBeTruthy();
-        expect(user.name).toBe(data.name);
-        expect(user.photo).toBe(data.photo);
-        expect(user.taskCount).toBe(0);
-        expect(user.role).toBe('Base');
-        expect(user.email).toBe(data.email);
+        expect(user.name).toBe('');
+        expect(user.avatar).toBe('');
+        expect(user.role).toBe('User');
+        expect(user.favorites.length).toBe(0);
+        expect(user.status).toBe(1);
+        expect(user.phone).toBe('');
+        expect(user.email).toBe(data.email.toLowerCase());
         expect(true).toBe(validPass2);
       });
   });
 
   test('POST BAD_REQUEST /api/users', async () => {
     const data = {
-      name: 'Patryk',
-      photo: 'UrlPhoto',
       email: 'patrykKox@gmail.com',
       password: 'Patryk123',
+      passwordRepeat: 'Patryk123',
     };
 
     await request(app)
@@ -122,16 +139,15 @@ describe('User router test', () => {
       .then(async (response) => {
         // Check the response
         expect(response.body.status).toBe('invalid');
-        expect(response.body.message).toBe('Email is already used');
+        expect(response.body.message).toBe('Email jest już zajęty.');
       });
   });
 
   test('POST BAD_REQUEST /api/users', async () => {
     const data = {
-      name: 'Patryk',
-      photo: 'UrlPhoto',
       email: 'patrykKoxgmail.com',
       password: 'Patryk123',
+      passwordRepeat: 'Patryk123',
     };
 
     await request(app)
@@ -141,15 +157,13 @@ describe('User router test', () => {
       .then(async (response) => {
         // Check the response
         expect(response.body.status).toBe('invalid');
-        expect(response.body.message).toBe('Please enter a valid email address.');
+        expect(response.body.message).toBe('Wprowadź poprawny adress email.');
       });
   });
 
   test('POST BAD_REQUEST /api/users', async () => {
     const data = {
-      name: 'Patryk',
-      photo: 'UrlPhoto',
-      email: 'patrykKoksik@gmail.com',
+      email: 'patrykKox@gmail.com',
     };
 
     await request(app)
@@ -159,15 +173,14 @@ describe('User router test', () => {
       .then(async (response) => {
         // Check the response
         expect(response.body.status).toBe('invalid');
-        expect(response.body.message).toBe('Password is a required field');
+        expect(response.body.message).toBe('Hasło jest wymaganym polem.');
       });
   });
 
   test('POST BAD_REQUEST /api/users', async () => {
     const data = {
-      name: 'Patryk',
-      photo: 'UrlPhoto',
       password: 'Patryk123',
+      passwordRepeat: 'Patryk123',
     };
 
     await request(app)
@@ -177,15 +190,15 @@ describe('User router test', () => {
       .then(async (response) => {
         // Check the response
         expect(response.body.status).toBe('invalid');
-        expect(response.body.message).toBe('Email is a required field');
+        expect(response.body.message).toBe('Email jest wymaganym polem.');
       });
   });
 
   test('POST BAD_REQUEST /api/users', async () => {
     const data = {
-      photo: 'UrlPhoto',
-      email: 'patrykKoksik@gmail.com',
+      email: 'patrykKox1@gmail.com',
       password: 'Patryk123',
+      passwordRepeat: 'Patryk12',
     };
 
     await request(app)
@@ -195,7 +208,7 @@ describe('User router test', () => {
       .then(async (response) => {
         // Check the response
         expect(response.body.status).toBe('invalid');
-        expect(response.body.message).toBe('Name is a required field');
+        expect(response.body.message).toBe('Podaj takie same hasła.');
       });
   });
 
@@ -211,8 +224,10 @@ describe('User router test', () => {
       .expect(200)
       .then(async (response) => {
         // Check the response
-        const activeUser = await User.find({ email: data.email });
-        expect(response.body.message).toBe(`Welcome ${activeUser[0].name}`);
+        const activeUser = await User.find({ email: data.email.toLowerCase() });
+        expect(response.body.role).toBe('User');
+        expect(response.body.id).toBe(activeUser[0]._id.toString());
+        expect(response.body.token).toBeTruthy();
       });
   });
 
@@ -229,7 +244,7 @@ describe('User router test', () => {
       .then(async (response) => {
         // Check the response
         expect(response.body.status).toBe('invalid');
-        expect(response.body.message).toBe('Email or password is wrong');
+        expect(response.body.message).toBe('Podaj poprawny email i hasło.');
       });
   });
 
@@ -237,14 +252,11 @@ describe('User router test', () => {
     const user = await User.create({
       email: 'patryk@gmail.com',
       password: 'Patryk123',
-      name: 'Patryk',
-      photo: 'UrlPhoto',
+      passwordRepeat: 'Patryk123',
     });
 
     const data = {
       name: 'Patryk',
-      photo: 'UrlPhoto',
-      role: 'Admin',
     };
 
     await request(app)
@@ -255,32 +267,127 @@ describe('User router test', () => {
         // Check the response
         expect(response.body.data._id).toBe(user.id);
         expect(response.body.data.name).toBe(data.name);
-        expect(response.body.data.photo).toBe(data.photo);
-        expect(response.body.data.role).toBe(data.role);
-        expect(response.body.message).toBe('Updated');
+        expect(response.body.message).toBe('Zaktualizowano.');
 
         // Check the data in the database
         const newUser = await User.findOne({ _id: response.body.data._id });
         expect(newUser).toBeTruthy();
         expect(newUser.email).toBe(user.email);
         expect(newUser.name).toBe(data.name);
-        expect(newUser.photo).toBe(data.photo);
+      });
+  });
+
+  test('PATCH /api/users/:id', async () => {
+    const user = await User.create({
+      email: 'patryk@gmail.com',
+      password: 'Patryk123',
+      passwordRepeat: 'Patryk123',
+    });
+
+    const data = {
+      phone: '123456789',
+    };
+
+    await request(app)
+      .patch('/api/users/' + user.id)
+      .send(data)
+      .expect(200)
+      .then(async (response) => {
+        // Check the response
+        expect(response.body.data._id).toBe(user.id);
+        expect(response.body.data.phone).toBe(data.phone);
+        expect(response.body.message).toBe('Zaktualizowano.');
+
+        // Check the data in the database
+        const newUser = await User.findOne({ _id: response.body.data._id });
+        expect(newUser).toBeTruthy();
+        expect(newUser.email).toBe(user.email);
+        expect(newUser.phone).toBe(data.phone);
+      });
+  });
+
+  test('PATCH /api/users/:id', async () => {
+    const user = await User.create({
+      email: 'patryk@gmail.com',
+      password: 'Patryk123',
+      passwordRepeat: 'Patryk123',
+    });
+
+    const data = {
+      role: 'Admin',
+    };
+
+    await request(app)
+      .patch('/api/users/' + user.id)
+      .send(data)
+      .expect(200)
+      .then(async (response) => {
+        // Check the response
+        expect(response.body.data._id).toBe(user.id);
+        expect(response.body.data.role).toBe(data.role);
+        expect(response.body.message).toBe('Zaktualizowano.');
+
+        // Check the data in the database
+        const newUser = await User.findOne({ _id: response.body.data._id });
+        expect(newUser).toBeTruthy();
+        expect(newUser.email).toBe(user.email);
         expect(newUser.role).toBe(data.role);
+      });
+  });
+
+  // todo
+  test('PATCH /api/users/:id', async () => {
+    const user = await User.create({
+      email: 'patryk@gmail.com',
+      password: 'Patryk123',
+      passwordRepeat: 'Patryk123',
+    });
+
+    const Image = `${__dirname}/../uploads/images/HELLjpg.jpg`;
+
+    await request(app)
+      .patch('/api/users/' + user.id)
+      .attach('avatar', Image)
+      .expect(200)
+      .then(async (response) => {
+        // Check the response
+        expect(response.body.data._id).toBe(user.id);
+        expect(response.body.data.avatar.split('-').includes('HELLjpg.jpg')).toBe(true);
+        expect(response.body.message).toBe('Zaktualizowano.');
+
+        // Check the data in the database
+        const newUser = await User.findOne({ _id: response.body.data._id });
+        expect(newUser).toBeTruthy();
+        expect(newUser.email).toBe(user.email);
+        expect(newUser.avatar.split('-').includes('HELLjpg.jpg')).toBe(true);
       });
   });
 
   test('PATCH BAD_REQUEST /api/users/:id', async () => {
     const user = await User.create({
-      email: 'patrykK@gmail.com',
+      email: 'patryk@gmail.com',
       password: 'Patryk123',
-      name: 'Patryk',
-      photo: 'UrlPhoto',
+      passwordRepeat: 'Patryk123',
     });
 
     const data = {
+      phone: '12345678',
+    };
+
+    await request(app)
+      .patch('/api/users/' + user.id)
+      .send(data)
+      .expect(400)
+      .then(async (response) => {
+        // Check the response
+        expect(response.body.status).toBe('invalid');
+        expect(response.body.message).toBe('Number telefonu musi mieć 9 cyfr.');
+      });
+  });
+
+  test('PATCH BAD_REQUEST /api/users/:id', async () => {
+    const data = {
       name: 'Patryk',
-      photo: 'UrlPhoto',
-      role: 'Admin',
     };
 
     await request(app)
@@ -289,7 +396,7 @@ describe('User router test', () => {
       .expect(400)
       .then(async (response) => {
         // Check the response
-        expect(response.body.message).toBe('User not found');
+        expect(response.body.message).toBe('Użytkownik nie został odnaleziony.');
       });
   });
 
@@ -301,7 +408,6 @@ describe('User router test', () => {
     const user = await User.create({
       email: 'PatrykZmianaHasla@gmail.com',
       password: hashedPassword,
-      name: 'Patryk',
     });
 
     const data = {
@@ -319,7 +425,7 @@ describe('User router test', () => {
         const validPass0 = await bcrypt.compare(data.password, user.password);
         expect(response.body.data._id).toBe(user.id);
         expect(true).toBe(validPass0);
-        expect(response.body.message).toBe('Updated');
+        expect(response.body.message).toBe('Zaktualizowano.');
 
         // Check the data in the database
         const newUser = await User.findOne({ _id: response.body.data._id });
@@ -353,7 +459,7 @@ describe('User router test', () => {
       .expect(400)
       .then(async (response) => {
         // Check the response
-        expect(response.body.message).toBe('User not found.');
+        expect(response.body.message).toBe('Użytkownik nie został odnaleziony.');
       });
   });
 
@@ -379,7 +485,7 @@ describe('User router test', () => {
       .expect(400)
       .then(async (response) => {
         // Check the response
-        expect(response.body.message).toBe('The old password and the new password must be different.');
+        expect(response.body.message).toBe('Stare hasło jak i nowe hasło muszą się róznić.');
       });
   });
 
@@ -405,7 +511,7 @@ describe('User router test', () => {
       .expect(400)
       .then(async (response) => {
         // Check the response
-        expect(response.body.message).toBe('Old password is wrong.');
+        expect(response.body.message).toBe('Stare hasło jest błędne.');
       });
   });
 
@@ -431,7 +537,7 @@ describe('User router test', () => {
       .expect(400)
       .then(async (response) => {
         // Check the response
-        expect(response.body.message).toBe('The passwords do not match.');
+        expect(response.body.message).toBe('Nowe hasło nie pasują do siebie.');
       });
   });
 
@@ -441,42 +547,111 @@ describe('User router test', () => {
       .expect(200)
       .then(async (response) => {
         // Check the response
-        expect(response.body.message).toBe('Logged out');
+        expect(response.body.message).toBe('Wylogowano.');
       });
   });
 
-  test('DELETE /api/users/:id', async () => {
+  test('PATCH /api/users/:id/deletion', async () => {
     const user = await User.create({
-      name: 'Patryk',
-      photo: 'UrlPhoto',
-      email: 'PatrykDelete@gmail.com',
+      email: 'patryk@gmail.com',
       password: 'Patryk123',
+      passwordRepeat: 'Patryk123',
     });
 
     await request(app)
-      .delete('/api/users/' + user.id)
+      .patch('/api/users/' + user.id + '/deletion')
       .expect(200)
       .then(async (response) => {
         // Check the response
-        expect(response.body.message).toBe('The account has been deleted');
+        expect(response.body.message).toBe('Użytkownik został zablokowany.');
       });
   });
 
-  test('DELETE BAD_REQUEST /api/users/:id', async () => {
-    const user = await User.create({
-      name: 'Patryk',
-      photo: 'UrlPhoto',
-      email: 'PatrykDelete1@gmail.com',
-      password: 'Patryk123',
-    });
-
+  test('PATCH BAD_REQUEST  /api/users/:id/deletion', async () => {
     await request(app)
-      .delete('/api/users/' + mongoose.Types.ObjectId('4edd40c86762e0fb12000003'))
+      .patch('/api/users/' + mongoose.Types.ObjectId('4edd40c86762e0fb12000003') + '/deletion')
       .expect(400)
       .then(async (response) => {
         // Check the response
-        expect(response.body.status).toBe('invalid');
-        expect(response.body.message).toBe('User not found');
+        expect(response.body.message).toBe('Użytkownik nie został odnaleziony.');
+      });
+  });
+
+  test('PATCH /api/users/:id/restore', async () => {
+    const user = await User.create({
+      email: 'patryk@gmail.com',
+      password: 'Patryk123',
+      passwordRepeat: 'Patryk123',
+    });
+
+    await request(app)
+      .patch('/api/users/' + user.id + '/restore')
+      .expect(200)
+      .then(async (response) => {
+        // Check the response
+        expect(response.body.message).toBe('Użytkownik został odblokowany.');
+      });
+  });
+
+  test('PATCH BAD_REQUEST  /api/users/:id/restore', async () => {
+    await request(app)
+      .patch('/api/users/' + mongoose.Types.ObjectId('4edd40c86762e0fb12000003') + '/restore')
+      .expect(400)
+      .then(async (response) => {
+        // Check the response
+        expect(response.body.message).toBe('Użytkownik nie został odnaleziony.');
+      });
+  });
+
+  test('PATCH /api/users/:id/favorite', async () => {
+    const user = await User.create({
+      email: 'patryk@gmail.com',
+      password: 'Patryk123',
+      passwordRepeat: 'Patryk123',
+    });
+
+    const data = {
+      favorites: 'Drugi',
+    };
+
+    const data1 = {
+      favorites: 'Pierwszy',
+    };
+
+    await request(app)
+      .patch('/api/users/' + user.id + '/favorite')
+      .send(data);
+
+    await request(app)
+      .patch('/api/users/' + user.id + '/favorite')
+      .send(data1)
+      .expect(200)
+      .then(async (response) => {
+        // Check the response
+
+        expect(response.body.data._id).toBe(user.id);
+        expect(response.body.data.favorites[0]).toBe(data.favorites);
+        expect(response.body.data.favorites[1]).toBe(data1.favorites);
+        expect(response.body.data.favorites.length).toBe(2);
+        expect(response.body.message).toBe('Zaktualizowano.');
+
+        // Check the data in the database
+        const newUser = await User.findOne({ _id: response.body.data._id });
+        expect(newUser).toBeTruthy();
+        expect(newUser.email).toBe(user.email);
+        expect(response.body.data.favorites[1]).toBe(data1.favorites);
+        expect(response.body.data.favorites[0]).toBe(data.favorites);
+        expect(response.body.data.favorites.length).toBe(2);
+      });
+  });
+
+  test('PATCH BAD_REQUEST  /api/users/:id/favorite', async () => {
+    await request(app)
+      .patch('/api/users/' + mongoose.Types.ObjectId('4edd40c86762e0fb12000003') + '/favorite')
+      .expect(400)
+      .then(async (response) => {
+        // Check the response
+        expect(response.body.message).toBe('Użytkownik nie został odnaleziony.');
       });
   });
 });
