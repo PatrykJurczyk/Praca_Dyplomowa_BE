@@ -54,7 +54,7 @@ const HouseSchema = mongoose.Schema(
     },
 
     floor: {
-      type: Number,
+      type: String,
       default: '',
     },
 
@@ -75,6 +75,7 @@ const HouseSchema = mongoose.Schema(
 
     descriptionField: {
       type: String,
+      default: ''
     },
 
     images: {
