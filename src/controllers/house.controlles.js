@@ -179,7 +179,7 @@ const deleteHouse = async (data, id) => {
 
 const getHouse = async (id) => {
   const house = await House.findOne({ _id: id });
-  if (!house) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
+  if (!house) return { status: 'invalid', message: 'Dom nie został odnaleziony.' };
 
   return house;
 };
