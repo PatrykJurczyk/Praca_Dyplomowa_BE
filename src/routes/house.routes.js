@@ -4,6 +4,8 @@ const {
   deleteHouse,
   editStatusAccepted,
   editHouseStatusExist,
+  getHouses,
+  getHouse,
 } = require('../controllers/house.controlles');
 const { StatusCodes } = require('http-status-codes');
 const House = require('../models/house');
@@ -51,21 +53,23 @@ const houseRoutes = (router) => {
   });
 
   router.get('/house', async (req, res) => {
-    try {
-      const house = await House.find();
-      res.status(200).json(house);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+    const response = await getHouses();
+
+    if (response.status === 'invalid') {
+      return res.status(StatusCodes.BAD_REQUEST).json(response);
     }
+
+    return res.status(StatusCodes.OK).json(response);
   });
 
   router.get('/house/:id', async (req, res) => {
-    try {
-      const house = await House.findOne({ _id: req.params.id });
-      res.status(200).json(house);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+    const response = await getHouse(req.params.id);
+
+    if (response.status === 'invalid') {
+      return res.status(StatusCodes.BAD_REQUEST).json(response);
     }
+
+    return res.status(StatusCodes.OK).json(response);
   });
 
   router.delete('/house/:id', async (req, res) => {

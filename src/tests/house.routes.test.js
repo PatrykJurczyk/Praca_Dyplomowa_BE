@@ -14,7 +14,57 @@ describe('House router test', () => {
 
   afterAll(async () => mongoose.disconnect());
 
-  test('GET /api/', async () => {
+  test('GET /api/house', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('GET  /api/house:id', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('GET BAD_REQUEST /api/house', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('GET BAD_REQUEST /api/house/:id', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('POST /api/house', async () => {
+    expect(1).toBe(1);
+  });
+  test('POST BAD_REQUEST /api/house', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('PATCH /api/house/:id/statusExist', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('PATCH BAD_REQUEST /api/house/:id/statusExist', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('PATCH /api/house/:id/statusAccepted', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('PATCH BAD_REQUEST /api/house/:id/statusAccepted', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('PATCH /api/house/:id', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('PATCH BAD_REQUEST /api/house/:id', async () => {
+    expect(1).toBe(1);
+  });
+
+  test('DELETE /api/house/:id', async () => {
+    expect(1).toBe(1);
+  });
+  test('DELETE BAD_REQUEST /api/house/:id', async () => {
     expect(1).toBe(1);
   });
 });

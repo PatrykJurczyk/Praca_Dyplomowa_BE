@@ -177,6 +177,19 @@ const deleteHouse = async (data, id) => {
   return { message: 'Dom został usunięty.' };
 };
 
+const getHouse = async (id) => {
+  const house = await House.findOne({ _id: id });
+  if (!house) return { status: 'invalid', message: 'Użytkownik nie został odnaleziony.' };
+
+  return house;
+};
+
+const getHouses = async () => {
+  const house = await House.find();
+
+  return house;
+};
+
 cron.schedule('0 0 * * *', async () => {
   const houses = await House.find();
 
@@ -203,4 +216,4 @@ cron.schedule('0 0 * * *', async () => {
   });
 });
 
-module.exports = { createHouse, editHouse, deleteHouse, editStatusAccepted, editHouseStatusExist };
+module.exports = { createHouse, editHouse, deleteHouse, editStatusAccepted, editHouseStatusExist, getHouse ,getHouses};
