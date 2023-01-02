@@ -11,8 +11,6 @@ const {
   getUsers,
 } = require('../controllers/user.controllers');
 const uploadFilesMiddleware = require('../middlewares/upload');
-const auth = require('../middlewares/verifyToken');
-const User = require('../models/user');
 
 const userRoutes = (router) => {
   router.post('/users', async (req, res) => {
