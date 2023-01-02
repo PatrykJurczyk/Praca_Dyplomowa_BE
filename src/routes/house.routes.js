@@ -8,7 +8,6 @@ const {
   getHouse,
 } = require('../controllers/house.controlles');
 const { StatusCodes } = require('http-status-codes');
-const House = require('../models/house');
 const uploadFilesMiddleware = require('../middlewares/upload');
 
 const houseRoutes = (router) => {
