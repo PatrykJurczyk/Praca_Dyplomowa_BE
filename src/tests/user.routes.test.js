@@ -485,7 +485,7 @@ describe('User router test', () => {
       .expect(400)
       .then(async (response) => {
         // Check the response
-        expect(response.body.message).toBe('Stare hasło jak i nowe hasło muszą się róznić.');
+        expect(response.body.message).toBe('Stare hasło jak i nowe hasło muszą się różnić.');
       });
   });
 

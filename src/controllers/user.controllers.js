@@ -93,7 +93,7 @@ const editPassword = async (data, id) => {
     return { status: 'invalid', message: 'Nowe hasło nie pasują do siebie.' };
 
   const difOldNewPass = await bcrypt.compare(data.newPasswordRepeat, user.password);
-  if (difOldNewPass) return { status: 'invalid', message: 'Stare hasło jak i nowe hasło muszą się róznić.' };
+  if (difOldNewPass) return { status: 'invalid', message: 'Stare hasło jak i nowe hasło muszą się różnić.' };
 
   data.password = data.newPasswordRepeat;
 
